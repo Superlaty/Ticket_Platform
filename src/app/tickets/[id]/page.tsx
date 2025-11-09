@@ -149,7 +149,7 @@ export default function TicketDetails({ params }: { params: Promise<{ id: string
         showDraw: formatDate("2025-11-15T00:00:00.000Z"),
         image: "hash/51/51a91f07e3f84e16cc89b8eda6657354b2206b01f5610b2716d92c13423814f6.webp",
         imageUrl: "hash/51/51a91f07e3f84e16cc89b8eda6657354b2206b01f5610b2716d92c13423814f6.webp",
-        status: "sold-out",
+        status: "on-sale",
         minPrice: 100
       }
     ]

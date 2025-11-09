@@ -100,7 +100,7 @@ export default function Tickets() {
         showDraw: formatDate("2025-10-13T07:00:07.000Z"),
         image: "hash/51/51a91f07e3f84e16cc89b8eda6657354b2206b01f5610b2716d92c13423814f6.webp",
         imageUrl: "hash/51/51a91f07e3f84e16cc89b8eda6657354b2206b01f5610b2716d92c13423814f6.webp",
-        status: "on-sale",
+        status: "sold-out",
         minPrice: 3800
       },
       {
@@ -117,7 +117,7 @@ export default function Tickets() {
         showDraw: formatDate("2025-11-15T00:00:00.000Z"),
         image: "hash/51/51a91f07e3f84e16cc89b8eda6657354b2206b01f5610b2716d92c13423814f6.webp",
         imageUrl: "hash/51/51a91f07e3f84e16cc89b8eda6657354b2206b01f5610b2716d92c13423814f6.webp",
-        status: "sold-out",
+        status: "on-sale",
         minPrice: 100
       }
     ]
