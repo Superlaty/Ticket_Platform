@@ -36,7 +36,7 @@ export default function MyTickets() {
     id: '2',
     artist: 'NewJeans',
     tour: 'Get Up World Tour',
-    eventTime: '2025-03-15T19:00:00.000Z',
+    eventTime: '2025-11-22T19:00:00.000Z',
     time: '19:30',
     venue: '台北小巨蛋',
     ticketTypeName: '普通票',
