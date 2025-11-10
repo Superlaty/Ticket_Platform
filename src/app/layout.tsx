@@ -6,6 +6,7 @@ import QuickQRAccess from "@/components/QuickQRAccess";
 import Image from "next/image";
 import Link from "next/link";
 import Providers from "./providers";
+import { Suspense } from 'react';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,12 +81,14 @@ export default function RootLayout({
         <script src="https://accounts.google.com/gsi/client" async defer />
       </head>
       <body className={`${inter.className} antialiased bg-white text-gray-900`}>
-        <Navigation />
-        <Providers>
-          <main className="min-h-screen">
-            {children}
-          </main>
-        </Providers>
+        <Suspense>
+          <Navigation />
+          <Providers>
+            <main className="min-h-screen">
+              {children}
+            </main>
+          </Providers>
+        </Suspense>
         
         {/* Quick QR Access for Tickets */}
         <QuickQRAccess />

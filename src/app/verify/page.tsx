@@ -40,6 +40,12 @@ type ticketResult = {
   data:[
     {
       claims:[
+        {ename:"id_number", value:""},
+        {ename:"name", value:""},
+      ]
+    },
+    {
+      claims:[
         {ename:"name", value:""},
         {ename:"ticket_number", value:""},
         {ename:"id_number", value:""},
@@ -49,11 +55,6 @@ type ticketResult = {
         {ename:"event_venue", value:""},
         {ename:"ticket_type", value:""},
         {ename:"seat", value:""},
-      ]
-    },{
-      claims:[
-        {ename:"id_number", value:""},
-        {ename:"name", value:""},
       ]
     }
   ]
@@ -158,11 +159,11 @@ export default function VerificationPage() {
     });
     await res.json().then((data:ticketResult)=>{
       const temp = ticketData;
-      data.data[0].claims.map((data)=>{
+      data.data[1].claims.map((data)=>{
         const key = data.ename
         temp[key] = data.value
       })
-      data.data[1].claims.map((data)=>{
+      data.data[0].claims.map((data)=>{
         const key = data.ename
         if(temp[key] != data.value){
           setMatch(false)
