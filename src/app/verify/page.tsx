@@ -4,6 +4,14 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./components/ui/table";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -63,17 +71,25 @@ type ticketResult = {
 export type LoginFormData = z.infer<typeof LoginSchema>;
 
 interface TicketInfo {
-  id: string;
-  eventName: string;
+  name: string;
+  ticket_number: string;
+  id_number: string;
   artist: string;
-  ticketSerialNumber: string;
-  identityNumber: string;
-  pickupTime: string;
+  price: string;
+  event_time: string;
+  event_venue: string;
+  ticket_type: string;
+  seat: string;
 }
 
 const STEP = {
   LOGIN: "LOGIN",
   VERIFICATION: "VERIFICATION",
+};
+
+const stateEnum = {
+  SINGLE: "SINGLE",
+  MULTIPLE: "MULTIPLE",
 };
 
 export default function VerificationPage() {
@@ -85,6 +101,8 @@ export default function VerificationPage() {
   const [transactionId, setTransactionId] = useState("");
   const [match, setMatch] = useState(true);
   const [error, setError] = useState("");
+  const [state, setState] = useState(stateEnum.SINGLE);
+  const [ticketHistory, setTicketHistory] = useState<TicketInfo[]>([]);
   const [ticketData, setTicketData] = useState({
     name: "",
     ticket_number: "",
@@ -128,21 +146,23 @@ export default function VerificationPage() {
     }
   };
 
+  const generateVerify = async () => {
+    const UID = await crypto.randomUUID();
+    
+    const res = await fetch(`/api/oidvp/qrcode?ref=${VCUID}&transactionId=${UID}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+    setTransactionId(UID);
+    await res.json().then((data)=>{
+      setQrcodeImage(data.qrcodeImage)
+    })
+  };
+
   useEffect(() => {
-    const generateVerify = async () => {
-      const UID = await crypto.randomUUID();
-      
-      const res = await fetch(`/api/oidvp/qrcode?ref=${VCUID}&transactionId=${UID}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-      setTransactionId(UID);
-      await res.json().then((data)=>{
-        setQrcodeImage(data.qrcodeImage)
-      })
-    };
+
     generateVerify();
     fetchEvents();
   }, []);
@@ -159,20 +179,25 @@ export default function VerificationPage() {
     });
     await res.json().then((data:ticketResult)=>{
       const temp = ticketData;
-      data.data[1].claims.map((data)=>{
-        const key = data.ename
-        temp[key] = data.value
-      })
-      data.data[0].claims.map((data)=>{
-        const key = data.ename
-        if(temp[key] != data.value){
-          setMatch(false)
-          setError(error + key + ":" + temp[key] + "與" + data.value + "不符合");
-        }
-      })
-
-      setTicketData(temp);
-      router.refresh()
+      if(data.data){
+        data.data[1].claims.map((data)=>{
+          const key = data.ename
+          temp[key] = data.value
+        })
+        data.data[0].claims.map((data)=>{
+          const key = data.ename
+          if(temp[key] != data.value){
+            setMatch(false)
+            setError(error + key + ":" + temp[key] + "與" + data.value + "不符合");
+          }
+        })
+        let tempH = ticketHistory;
+        tempH.push(temp)
+        setTicketHistory(tempH);
+        setTicketData(temp);
+        generateVerify();
+        router.refresh()
+      }
     })
   }
 
@@ -189,6 +214,16 @@ export default function VerificationPage() {
 
   const handleLogin = () => {
     setStep(STEP.VERIFICATION);
+  };
+
+  const updateData = () => {
+    showData()
+    setState(stateEnum.MULTIPLE);
+  };
+
+  const openSingleData = (info: TicketInfo) => {
+    setTicketData(info);
+    setState(stateEnum.SINGLE);
   };
 
   return (
@@ -293,7 +328,16 @@ export default function VerificationPage() {
                 <div className="flex flex-col gap-4 col-span-12 md:col-span-4 h-full">
                   <Card>
                     <CardHeader>
-                      <CardTitle>驗證 QR Code</CardTitle>
+                      <CardTitle className="flex items-center justify-between">
+                        驗證 QR Code
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={updateData}
+                        >
+                          更新資料
+                        </Button>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center justify-center space-y-4">
                       {ticketData && (
@@ -314,15 +358,9 @@ export default function VerificationPage() {
                     <CardHeader>
                       <CardTitle>
                         活動資訊
-                        <Button 
-                          type="button"
-                          className="absolute top-4 right-4 px-3 py-1 text-sm border border-gray-400 rounded hover:bg-gray-200"
-                          onClick={() => showData()}
-                        >
-                          更新資料
-                        </Button>
                       </CardTitle>
                     </CardHeader>
+                    {state === stateEnum.SINGLE ? (
                     <CardContent className="space-y-4">
                       {ticketData.name!="" && <div>
                         {match?<p style={{ color: 'green' }}>✔ 資訊驗證成功</p>
@@ -385,6 +423,46 @@ export default function VerificationPage() {
                         </p>
                       </div>
                     </CardContent>
+                  ) : (
+                      <Table className="w-full p-8">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-start">
+                              身分字號
+                            </TableHead>
+                            <TableHead className="text-center">
+                              姓名
+                            </TableHead>
+                            <TableHead className="text-center">
+                              票券種類
+                            </TableHead>
+                            <TableHead className="text-end">座位號碼</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ticketHistory.map((data, index) => (
+                            <TableRow
+                              key={index}
+                              onClick={() => openSingleData(data)}
+                              className="cursor-pointer hover:bg-muted/50"
+                            >
+                              <TableCell className="text-start">
+                                {data.id_number}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {data.name}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {data.ticket_type}
+                              </TableCell>
+                              <TableCell className="text-end">
+                                {data.seat}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
                   </Card>
                 </div>
               </div>
